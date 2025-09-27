@@ -18,6 +18,7 @@ services:
       interval: 10s
       timeout: 3s
       retries: 3
+
   temperature-api:
     build:
       context: ./temperature_api
@@ -27,6 +28,30 @@ services:
       - "8081:8081"
     networks:
       - smarthome-network
+
+  telemetry:
+    build:
+      context: ./telemetry
+      dockerfile: Dockerfile
+    container_name: telemetry
+    ports:
+      - "8082:8082"
+    networks:
+      - smarthome-network
+
+  device-hub:
+    build:
+      context: ./device_hub
+      dockerfile: Dockerfile
+    container_name: device-hub
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "8083:8083"
+    networks:
+      - smarthome-network
+
   app:
     build:
       context: ./smart_home
