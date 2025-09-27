@@ -1,0 +1,16 @@
+@startuml
+!include <C4/C4_Component>
+
+ContainerQueue(bus, "Event Bus", "kafka", "События и команды между сервисами")
+
+Container_Boundary(telemetry, "Telemetry Service") {
+    Component(registry, "Registry", "", "Хранение данных телеметрии")
+    Component(consumer, "Consumer", "", "Сборщик данных с брокера сообщений")
+}
+ContainerDb(tsdb, "Telemetry DB", "influxdb", "История телеметрии, time-series db")
+
+Rel(consumer, registry, "Передает данные")
+Rel(consumer, bus, "Забирает данные из (sub)", "kafka events")
+Rel(registry, tsdb, "Читает/пишет", "InfluxQL")
+
+@enduml

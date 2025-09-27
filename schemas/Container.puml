@@ -1,0 +1,32 @@
+@startuml
+!include <C4/C4_Container>
+
+Person(user, "User", "Пользователь")
+
+System_Boundary(wh, "Warm House") {
+    Container(webapp, "WebApp", "js", "Веб приложение Теплый дом")
+    Container(api, "API Gateway", "nginx", "Единая точка входа")
+    Container(auth, "Auth Service", "python", "Сервис авторизации")
+    Container(devicehub, "Device hub", "go", "Управление устройствами")
+    Container(telemetry, "Telemetry Service", "python", "Сбор показаний с устройств")
+    Container_Boundary(data, "Data Stores") {
+        ContainerDb(sqldb, "DB", "postgresql", "Реляционная БД общего назначения")
+        ContainerDb(tsdb, "Telemetry DB", "influxdb", "История телеметрии, time-series db")
+    }
+    ContainerQueue(bus, "Event Bus", "kafka", "События и команды между сервисами")
+}
+
+System_Ext(device, "Устройства", "Датчики, и тд.")
+
+Rel(user, webapp, "Подключение и настройка устройств, просмотр телеметрии")
+Rel(webapp, api, "Обращается к", "JSON REST/HTTPS")
+Rel(api, auth, "Обращается к", "gRPC")
+Rel(api, devicehub, "Обращается к", "gRPC")
+Rel(api, telemetry, "Обращается к", "gRPC")
+Rel(auth, sqldb, "Читает/пишет", "SQL")
+Rel(devicehub, sqldb, "Читает/пишет", "SQL")
+Rel(devicehub, bus, "Публикует события (pub)", "kafka events")
+Rel(telemetry, tsdb, "Читает/пишет", "InfluxQL")
+Rel(telemetry, bus, "Забирает данные из (sub)", "kafka events")
+Rel_U(device, bus, "Обновляют состояние (pub/sub)", "kafka events")
+@enduml

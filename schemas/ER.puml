@@ -1,0 +1,36 @@
+@startuml
+!theme plain
+
+entity "User" as user {
+  *id : UUID <<PK>>
+  --
+  email : varchar
+  password_hash : varchar
+  created_at : timestamp
+}
+
+entity "Device" as device {
+  *id : UUID <<PK>>
+  --
+  name : varchar
+  type : varchar
+  user_id : UUID <<FK>>
+  location : varchar
+  status : varchar
+  created_at : timestamp
+}
+
+entity "Telemetry" as telemetry {
+  *id : bigserial <<PK>>
+  --
+  device_id : UUID <<FK>>
+  time : timestamp
+  value : double
+  unit : varchar
+}
+
+' Relationships
+user ||--o{ device : owns
+device ||--o{ telemetry : produces
+
+@enduml
