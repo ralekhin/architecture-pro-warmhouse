@@ -1,0 +1,155 @@
+openapi: 3.1.0
+info:
+  title: Warm House API
+  version: 0.1.0
+  description: API системы Теплый дом
+servers:
+  - url: https://warmhouse.com/api/
+paths:
+  /auth/login:
+    post:
+      summary: Аутентификация пользователя
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '401':
+          description: invalid authentication credentials
+  /devices/{deviceId}:
+    get:
+      summary: Получение информации о датчике/устройстве
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/DeviceId'
+      responses:
+        '200':
+          description: success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Device'
+        '404':
+          description: not found
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+    patch:
+      summary: Изменить состояние датчика/устройства (пока вкл/выкл)
+      parameters:
+        - $ref: '#/components/parameters/DeviceId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SwitchCommand'
+      responses:
+        '200':
+          description: changed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Device'
+        '404':
+          description: not found
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /telemetry/{deviceId}:
+    get:
+      summary: Получить данные с датчика/устройства
+      parameters:
+        - $ref: '#/components/parameters/DeviceId'
+      responses:
+        '200':
+          description: success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TelemetryItem'
+        '404':
+          description: Device not found
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+  responses:
+    UnauthorizedError:
+      description: unauthorized
+  parameters:
+    DeviceId:
+      in: path
+      name: deviceId
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: Уникальный идентификатор устройства
+  schemas:
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+    LoginResponse:
+      type: object
+      properties:
+        access_token:
+          type: string
+        refresh_token:
+          type: string
+    Device:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        type:
+          type: string
+        status:
+          type: string
+        location:
+          type: string
+    SwitchCommand:
+      type: object
+      required: [command]
+      properties:
+        command:
+          type: string
+          enum: [ON, OFF]
+      example:
+        command: ON
+    TelemetryItem:
+      type: object
+      properties:
+        device_id:
+          type: string
+          format: uuid
+        ts:
+          type: string
+          format: date-time
+        value:
+          type: number
+        unit:
+          type: string

@@ -1,0 +1,27 @@
+@startuml
+!theme plain
+
+class Device {
+  id: UUID
+  name: string
+  type: string
+  location: string
+  status: string
+}
+
+class DeviceRepository {
+  - db: pgx.Pool
+  + GetDeviceList(): []Sensor
+  + UpdateValue(id, value): error
+}
+
+class DeviceHandler {
+  - repository: DeviceRepository
+  + GetSensors()
+  + GetSensorByID(id)
+  + UpdateValue(id, value)
+}
+
+DeviceRepository "1" --> "*" Device : manages
+DeviceHandler --> DeviceRepository : calls
+@enduml

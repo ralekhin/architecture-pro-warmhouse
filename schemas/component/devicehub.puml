@@ -1,0 +1,16 @@
+@startuml
+!include <C4/C4_Component>
+
+Container_Boundary(devicehub, "Device Hub") {
+    Component(registry, "Registry", "", "Хранит данные об устройствах")
+    Component(controller, "Controller", "", "Публикует события управления")
+}
+ContainerQueue(bus, "Event Bus", "kafka", "События и команды между сервисами")
+ContainerDb(sqldb, "DB", "postgresql", "Реляционная БД общего назначения")
+
+Rel(controller, registry, "Получает данные об устройствах")
+Rel(registry, sqldb, "Читает/пишет", "SQL")
+Rel(controller, bus, "Публикует события (pub)", "kafka events")
+
+
+@enduml
