@@ -19,9 +19,12 @@ class TemperatureResponse(BaseModel):
     location: str
     value: float
     timestamp: dt
+    status: str
+
 
 
 @app.get("/temperature", response_model=TemperatureResponse)
+@app.get("/temperature/{sensorId}", response_model=TemperatureResponse)
 async def temperature_by_location(
     location: Optional[str] = None,
     sensorId: Optional[str] = None,
@@ -35,5 +38,6 @@ async def temperature_by_location(
         sensor_id = sensorId,
         location = location,
         value = round(random.uniform(0.0, 50.0), 1),
-        timestamp = dt.now().isoformat() + "Z"
+        timestamp = dt.now().isoformat() + "Z",
+        status = "active"
     )
